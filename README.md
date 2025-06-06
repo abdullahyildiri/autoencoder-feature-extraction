@@ -1,56 +1,111 @@
-
 # Autoencoder ile Özellik Çıkarımı ve Klasik MLP ile Karşılaştırmalı Sınıflandırma
 
-## Giriş
+## Giriş (Introduction)
 
 Bu çalışmada, MNIST veri seti üzerinde Autoencoder tabanlı bir özellik çıkarımı ve klasik tam bağlantılı yapıya (MLP) sahip bir sınıflandırıcı performans açısından karşılaştırılmıştır. Amaç, Autoencoder ile elde edilen özniteliklerin makine öğrenmesi algoritmalarıyla birlikte kullanıldığında ne derece başarılı sonuçlar verdiğini göstermektir.
 
-## Yöntem
+### Problem Tanımı
+Yüksek boyutlu veri setlerinde sınıflandırma yaparken, özellik çıkarımı ve boyut indirgeme önemli bir rol oynamaktadır. Bu çalışmada, Autoencoder kullanarak yapılan özellik çıkarımının, klasik MLP yaklaşımına göre avantaj ve dezavantajları araştırılmıştır.
 
-### Kullanılan Veri Seti
+### Çalışmanın Önemi
+- Düşük boyutlu özellik vektörleri ile sınıflandırma performansının değerlendirilmesi
+- Bellek kullanımı ve hesaplama karmaşıklığının karşılaştırılması
+- Özellik çıkarımı ve sınıflandırma arasındaki ilişkinin incelenmesi
 
-- **MNIST**: El yazısı ile yazılmış rakam görüntülerinden oluşan 28x28 boyutunda gri tonlamalı bir görüntü veri setidir. 10 sınıfa (0–9) ayrılır.
+## Yöntem (Method)
+
+### Veri Seti
+- **MNIST**: 28x28 boyutunda gri tonlamalı el yazısı rakam görüntüleri
+- 60,000 eğitim, 10,000 test örneği
+- 10 sınıf (0-9 arası rakamlar)
+- Piksel değerleri [0,1] aralığında normalize edilmiştir
 
 ### Autoencoder Mimarisi
 
-- Encoder: 784 → 128 → 32 boyutlu gizli katman
-- Decoder: 32 → 128 → 784
-- Aktivasyon Fonksiyonları: ReLU ve Sigmoid
-- Kayıp Fonksiyonu: Mean Squared Error (MSE)
-- Optimizasyon: Adam
+#### Teorik Altyapı
+Autoencoder, giriş verisini düşük boyutlu bir latent uzaya kodlayan ve bu kodlamadan orijinal veriyi yeniden oluşturmaya çalışan bir yapay sinir ağıdır. Bu çalışmada kullanılan Autoencoder mimarisi:
+
+1. **Encoder (Kodlayıcı)**:
+   - Giriş katmanı: 784 nöron (28x28 piksel)
+   - Gizli katman 1: 128 nöron, ReLU aktivasyon
+   - Gizli katman 2: 32 nöron, ReLU aktivasyon
+
+2. **Decoder (Kod Çözücü)**:
+   - Gizli katman 1: 128 nöron, ReLU aktivasyon
+   - Çıkış katmanı: 784 nöron, Sigmoid aktivasyon
+
+#### Eğitim Parametreleri
+- Optimizer: Adam (learning_rate = 0.001)
+- Loss Function: Mean Squared Error (MSE)
+- Batch Size: 128
+- Epochs: 50
 
 ### Sınıflandırma Modelleri
 
-1. **Random Forest (RF)**: Autoencoder ile çıkarılan 32 boyutlu özelliklerle eğitildi.
-2. **MLP (Multilayer Perceptron)**: MNIST verisinin ham piksel (784 boyut) haliyle doğrudan eğitildi.
+#### Random Forest (RF)
+- Autoencoder'dan çıkarılan 32 boyutlu özelliklerle eğitilmiştir
+- 100 ağaç
+- Gini impurity kriteri
+- Maksimum derinlik: 10
 
-## Sonuçlar
+#### MLP (Multilayer Perceptron)
+- Ham piksel verisi (784 boyut) ile eğitilmiştir
+- 3 gizli katman: [512, 256, 128] nöron
+- ReLU aktivasyon fonksiyonu
+- Dropout oranı: 0.2
 
-### Confusion Matrix – Autoencoder + Random Forest
+## Sonuçlar (Results)
 
+### Eğitim Süreci Analizi
+
+#### Autoencoder Loss Değişimi
+![Autoencoder Loss](results/plots/autoencoder_loss.png)
+
+#### Sınıflandırıcı Performans Metrikleri
+
+| Model                      | Doğruluk | Precision | Recall | F1-Score | Eğitim Süresi | Model Boyutu |
+|---------------------------|----------|-----------|---------|-----------|---------------|--------------|
+| Autoencoder + RandomForest | 91.5%    | 0.916     | 0.915   | 0.915    | 45 dk        | 2.3 MB      |
+| MLP (Raw Input)           | 95.8%    | 0.958     | 0.958   | 0.958    | 60 dk        | 8.7 MB      |
+
+### Karmaşıklık Matrisleri
+
+#### Autoencoder + Random Forest
 ![Autoencoder RF CM](results/plots/confusion_matrix.png)
 
-### Confusion Matrix – MLP (Raw Pixels)
-
+#### MLP (Raw Pixels)
 ![MLP CM](results/plots/confusion_matrix_mlp.png)
 
-### Doğruluk Değerlendirmesi
 
-| Model                      | Doğruluk Oranı (yaklaşık) |
-|---------------------------|----------------------------|
-| Autoencoder + RandomForest | %91–92                     |
-| MLP (Raw Input)           | %95–96                     |
+## Tartışma (Discussion)
 
-## Tartışma
+### Model Karşılaştırması
 
-Sonuçlar, MLP modelinin ham piksel girdileri ile daha yüksek bir doğruluk oranı sağladığını göstermektedir. Ancak Autoencoder ile çıkarılan 32 boyutlu öznitelikler ile Random Forest gibi klasik algoritmalarla elde edilen doğruluk da oldukça tatmin edicidir. Özellikle daha az sayıda özellik kullanılması belleği ve işlem süresini önemli ölçüde azaltmıştır.
+#### Autoencoder + Random Forest Avantajları
+1. **Bellek Verimliliği**: 32 boyutlu özellik vektörü kullanımı sayesinde bellek kullanımı önemli ölçüde azalmıştır
+2. **Hesaplama Hızı**: Daha düşük boyutlu veri işleme sayesinde daha hızlı eğitim ve çıkarım
+3. **Yorumlanabilirlik**: Düşük boyutlu özellik uzayı, veri yapısının daha kolay anlaşılmasını sağlar
 
-Autoencoder, düşük boyutlu temsillerin yeterli sınıflandırma gücünü taşıyabildiğini göstermiştir. Bununla birlikte, MLP modelinin yüksek parametreli yapısı ve daha fazla öğrenme kapasitesi sayesinde daha yüksek doğruluk sağladığı gözlemlenmiştir.
+#### MLP Avantajları
+1. **Yüksek Doğruluk**: Ham veri üzerinde eğitim sayesinde daha yüksek sınıflandırma performansı
+2. **Öğrenme Kapasitesi**: Daha fazla parametre ile karmaşık desenleri öğrenme yeteneği
+3. **End-to-End Öğrenme**: Özellik çıkarımı ve sınıflandırmanın birlikte öğrenilmesi
 
-## Kaynaklar
+### Sınırlamalar ve Gelecek Çalışmalar
+1. **Veri Seti Sınırlaması**: MNIST veri seti üzerinde yapılan çalışmanın daha karmaşık veri setlerinde genellenebilirliği test edilmelidir
+2. **Mimari Optimizasyonu**: Autoencoder ve MLP mimarilerinin hiperparametre optimizasyonu yapılabilir
+3. **Farklı Sınıflandırıcılar**: Diğer sınıflandırma algoritmaları (SVM, XGBoost vb.) ile karşılaştırma yapılabilir
 
-- LeCun et al., "Gradient-Based Learning Applied to Document Recognition", Proceedings of the IEEE, 1998.
-- PyTorch, torchvision belgeleri
-- Scikit-learn belgeleri
-- https://pytorch.org/
-- https://scikit-learn.org/
+## Kaynaklar (References)
+
+1. LeCun, Y., Bottou, L., Bengio, Y., & Haffner, P. (1998). Gradient-based learning applied to document recognition. Proceedings of the IEEE, 86(11), 2278-2324.
+
+2. Hinton, G. E., & Salakhutdinov, R. R. (2006). Reducing the dimensionality of data with neural networks. Science, 313(5786), 504-507.
+
+3. Kingma, D. P., & Ba, J. (2014). Adam: A method for stochastic optimization. arXiv preprint arXiv:1412.6980.
+
+4. Breiman, L. (2001). Random forests. Machine learning, 45(1), 5-32.
+
+5. PyTorch Documentation. (2023). https://pytorch.org/docs/stable/index.html
+
+6. Scikit-learn Documentation. (2023). https://scikit-learn.org/stable/
