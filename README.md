@@ -63,10 +63,10 @@ Autoencoder, giriş verisini düşük boyutlu bir latent uzaya kodlayan ve bu ko
 
 #### Sınıflandırıcı Performans Metrikleri
 
-| Model                      | Doğruluk | Precision | Recall | F1-Score | Eğitim Süresi | Model Boyutu |
-|---------------------------|----------|-----------|---------|-----------|---------------|--------------|
-| Autoencoder + RandomForest | 91.5%    | 0.916     | 0.915   | 0.915    | 45 dk        | 2.3 MB      |
-| MLP (Raw Input)           | 95.8%    | 0.958     | 0.958   | 0.958    | 60 dk        | 8.7 MB      |
+| Model                      | Doğruluk | Precision | Recall | F1-Score | Model Boyutu |
+|---------------------------|----------|-----------|---------|-----------|--------------|
+| Autoencoder + RandomForest | 91.5%    | 0.916     | 0.915   | 0.915    | 2.3 MB      |
+| MLP (Raw Input)           | 95.8%    | 0.958     | 0.958   | 0.958    | 8.7 MB      |
 
 ### Karmaşıklık Matrisleri
 
